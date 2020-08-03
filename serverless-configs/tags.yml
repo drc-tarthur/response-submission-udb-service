@@ -1,0 +1,4 @@
+default:
+  Application: ${self:service}
+  Environment: ${self:custom.stage}
+  CostCenter:  ECA

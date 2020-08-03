@@ -1,0 +1,47 @@
+{
+  "registrationId": "43C227A9-ADC4-4AD5-A22D-429F6EFBEDD8",
+  "standard": "<standard_id>",
+  "client": "WA",
+  "grade": "2",
+  "observer": "OBS-123-999",
+  "proctor": "39D2CA9F-3114-4338-A5FF-70594E40710E",
+  "submitToScoringDate": "2020-05-11T16:36:59.645Z",
+  "responses": [{
+    "testCompleteDate": "2020-05-11T16:36:00.507Z",
+    "items": [
+      {
+      "inputs": [{
+        "responseIdentifier": "bubbleinput1",
+        "response": ["bubble1"]
+      }],
+      "itemId": "123456"
+    },{
+      "inputs": [{
+        "responseIdentifier": "bubbleinput1",
+        "response": ["bubble1"]
+      }],
+      "itemId": "789468"
+    },{
+      "inputs": [{
+        "responseIdentifier": "bubbleinput1",
+        "response": ["bubble1"]
+      }],
+      "itemId": "349876"
+    },{
+      "inputs": [{
+        "responseIdentifier": "bubbleinput1",
+        "response": ["bubble1"],
+        "adaptationResponse": ["SR", "OR", "PR"]
+      }],
+      "itemId": "012387"
+    },{
+      "inputs": [{
+        "responseIdentifier": "bubbleinput1",
+        "response": ["bubble1"],
+        "adaptationResponse": ["OT"],
+        "adaptationWrittenResponse": "I AM OTHER"
+      }],
+      "itemId": "013888"
+    }]
+  }]
+}

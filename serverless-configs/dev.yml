@@ -1,0 +1,16 @@
+accountId: 177429746880
+  
+us-east-1:
+  vpcSubnetId1: subnet-c379c2ef # Private Subnet
+  vpcSubnetId2: subnet-2ed7a766 # Private Subnet
+  vpcSubnetId3: subnet-cbc0c691 # Private Subnet
+  vpcSgId1: sg-c23dcc89 # Default https Lambda Security Group
+us-east-2:
+  vpcSubnetId1: subnet-4edf9d26 # Private Subnet
+  vpcSubnetId2: subnet-7e8c3704 # Private Subnet
+  vpcSubnetId3: subnet-e37193af # Private Subnet
+  vpcSgId1: sg-df472db5 # Default https Lambda Security Group
+
+dlqRetentionPeriod: 345600
+
+IamRoleLambdaExecution: arn:aws:iam::

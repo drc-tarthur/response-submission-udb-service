@@ -1,0 +1,106 @@
+service:
+  name: ${self:custom.app}
+
+custom:
+  app: response-submission-udb-service
+  leSuffix: '-le'
+  envSuffix: ${file(./serverless-configs/${self:custom.stage}.yml):custom.envSuffix,self:custom.leSuffix}
+  bucketSuffix: ${file(./serverless-configs/${self:custom.stage}.yml):custom.bucketSuffix,self:custom.leSuffix}
+  stage: ${opt:stage,'dev'}
+  awsregion: ${opt:region,'us-east-2'}
+  region: ${self:custom.awsregion}
+  label: ${self:service.name}-${self:custom.stage}
+  apiPath: ''
+  env: ${file(./serverless-configs/${self:custom.stage}.yml)}
+  #cors: ${file(./serverless-configs/cors.yml)}
+  defaultTags: ${file(./serverless-configs/tags.yml):default}
+  reservedConcurrency: ${file(./serverless-configs/limits.yml):reservedConcurrency}
+  $merge_cloudwatch: ${file(./serverless-configs/cloudwatch.yml),file(./serverless-configs/local.yml)}
+  $merge_local: ${file(./.local/local.yml):custom,file(./serverless-configs/local.yml)}
+
+  scriptHooks:
+    after:deploy:compileEvents: serverless-add-log-subscriptions.js
+
+
+  cnameWeights:
+    us-east-1: 0
+    us-east-2: 100
+
+  drc:
+    customDomain:
+      cname: true
+      weight: ${self:custom.cnameWeights.${self:custom.region}}
+      ttl: 60
+      setId: ${self:custom.app}.${self:custom.region}
+      publicPrivate: true
+    dashboards:
+      create: true
+      name: ${self:custom.label}-${self:custom.region}
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ${self:custom.region}
+  stage: ${self:custom.stage}
+  #leRole: arn:aws:iam::177429746880:role/response-submission-udb-service-le  #what is this?
+  #role: ${file(./serverless-configs/${self:custom.stage}.yml):provider.role,self:provider.leRole}
+  role: IamRoleLambdaExecution
+  stackName: ${self:custom.label}
+  stackTags:
+    $merge: ${self:custom.defaultTags}
+  tags:
+    $merge: ${self:custom.defaultTags}
+  deploymentBucket:
+    name: ${file(./.local/local.yml):deploymentBucketName,'${self:provider.region}-drc-serverlessdeployments${self:custom.bucketSuffix}'}
+    serverSideEncryption: AES256
+  endpointType: regional
+  apiName: ${self:custom.label}
+  apiGatewayName: ${self:custom.label}
+  timeout: 30
+  environment:
+    ENVIRONMENT: ${self:custom.stage}
+    INFO: ${self:service.name}.${self:custom.stage}.${self:custom.region}
+  tracing: true # enable x-ray
+  logRetentionInDays: 14
+  $merge_local: ${file(./.local/local.yml):provider,file(./serverless-configs/local.yml)}
+  logSubscriptionDestinationArn: arn:aws:firehose:${self:custom.region}:${self:custom.env.accountId}:deliverystream/cloudwatch-firehose-s3-stream
+  logSubscriptionRoleArn: arn:aws:iam::${self:custom.env.accountId}:role/CWLtoKinesisFirehoseRole
+
+  vpc: #VPC Subnets and Security Groups
+    subnetIds:
+      - ${self:custom.env.${self:provider.region}.vpcSubnetId1}
+      - ${self:custom.env.${self:provider.region}.vpcSubnetId2}
+      - ${self:custom.env.${self:provider.region}.vpcSubnetId3}
+    securityGroupIds:
+      - ${self:custom.env.${self:provider.region}.vpcSgId1}
+
+package:
+  path: slspkg/${self:custom.stage}/${self:custom.region}
+  include:
+    - src/swagger.yaml
+  exclude:
+    - node_modules/**
+    - '!node_modules/tedious/**'
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-plugin-include-dependencies
+  - serverless-offline
+  - serverless-plugin-aws-alerts
+  - serverless-plugin-tracing
+  # - serverless-domain-manager
+  - serverless-drc-extras
+  - serverless-scriptable-plugin
+
+functions:
+  response-submission:
+    name: ${self:custom.label}_response-submission
+    handler: src/topicListener.handler
+    #events:
+    #  - sqs:
+    #      arn: arn:aws:sqs:${self:custom.region}:${self:custom.env.accountId}:participant-registration-export-to-udb-${self:custom.stage}-queue
+    #      batchSize: 1
+
+resources:
+  Resources:
+    IamRoleLambdaExecution: ${file(IAM/IamRoleLambdaExecution.yml)}

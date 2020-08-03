@@ -1,0 +1,28 @@
+reservedConcurrency:
+  default: 5
+  loadtest:
+    session-activate: 300
+    response-send: 2500
+    response-send-all: 300
+    response-retrieve-all: 5
+    telemetry-send: 300
+  xloadtest:
+    session-activate: 10
+    response-send: 30
+    response-send-all: 10
+    response-retrieve-all: 10
+    telemetry-send: 20
+
+dynamodb:
+  read:
+    default: 1
+    loadtest:
+      sessions: 5
+      responses: 5
+      telemetry: 5
+  write:
+    default: 1
+    loadtest:
+      sessions: 100
+      responses: 5000
+      telemetry: 1000

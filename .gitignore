@@ -1,0 +1,20 @@
+.build
+.vscode
+.dynamodb
+
+# package directories
+node_modules
+jspm_packages
+slspkg
+
+# Serverless directories
+.serverless
+
+.local
+
+# test/coverage output
+.nyc_output
+artifacts
+smoketesting-results
+apache-jmeter-*
+jmeter.log

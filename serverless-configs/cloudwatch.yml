@@ -1,0 +1,37 @@
+alerts: #CloudWatch Alerts
+  stages:
+    - dev
+    - loadtest
+    - prod
+  alarms:
+    - functionThrottles
+    - functionErrors
+    - functionInvocations
+    - functionDuration
+  dashboards: false
+  topics:
+    # ok: ${self:custom.vars.${opt:region}.snstopicalarm}
+    # alarm: ${self:custom.vars.${opt:region}.snstopicalarm}
+    # insufficientData: ${self:custom.vars.${opt:region}.snstopicalarm}
+  definitions:  # these defaults are merged with your definitions
+    functionInvocations:
+      threshold: 100
+      period: 60
+      evaluationPeriods: 2
+      treatMissingData: notBreaching
+    functionErrors:
+      threshold: 10
+      period: 60
+      evaluationPeriods: 2
+      treatMissingData: missing
+    functionThrottles:
+      threshold: 10
+      period: 60
+      evaluationPeriods: 2
+      treatMissingData: missing
+    functionDuration:
+      threshold: 500
+      statistic: Maximum
+      period: 60
+      evaluationPeriods: 2
+      treatMissingData: notBreaching
