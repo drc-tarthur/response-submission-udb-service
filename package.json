@@ -40,6 +40,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.725.0",
     "aws-xray-sdk": "^2.3.6",
     "chai": "^4.2.0",
     "drc-udb-connection": "github:DataRecognitionCorporation/drc-udb-connection#v1.0.0",
