@@ -1,5 +1,5 @@
 // Using 'declarative' pipeline syntax.
-@Library('DRC_Global_Pipeline_Libraries@v1.9.1')
+@Library('DRC_Global_Pipeline_Libraries@master')
 def arti_RepoMap = [ 'master': 'drc-release', 'develop': 'drc-dev' ]
 def br_map = ['develop': 'develop', 'master': 'master']
 def scmVars = [:]
@@ -36,11 +36,11 @@ pipeline {
             sh 'npm install'
            // sh 'yamllint configs/*.yml'
            // sh 'yamllint serverless.yml'
-            lock(resource: "response-submission-udb-tests", inversePrecedence: true) {
-              drc_AwsAssumeRole([acctNum: leAcctNum,
-                                 appName: 'response-submission-udb-tests',
-                                 bldNum : env.BUILD_NUMBER,
-                                 jenkinsRole: "Terraform-Jenkins-Role" ])
+           // lock(resource: "response-submission-udb-tests", inversePrecedence: true) {
+            //  drc_AwsAssumeRole([acctNum: leAcctNum,
+              //                   appName: 'response-submission-udb-tests',
+                //                 bldNum : env.BUILD_NUMBER,
+                  //               jenkinsRole: "Terraform-Jenkins-Role" ])
             //sh 'npm run jenkins-test'
             }
           }
@@ -65,10 +65,10 @@ pipeline {
       steps {
         script {
           def deployTargets = [
-                  [env: 'dev', regions: [[region: 'us-east-2', globalTable: false], [region: 'us-east-1', globalTable: true]], askForPermission: false, acctNum: leAcctNum],
-                  [env: 'sqa', regions: [[region: 'us-east-2', globalTable: false], [region: 'us-east-1', globalTable: true]], askForPermission: false, acctNum: leAcctNum],
-                  [env: 'staging', regions: [[region: 'us-east-2', globalTable: false], [region: 'us-east-1', globalTable: true]], askForPermission: false, acctNum: leAcctNum],
-                  [env: 'lt', regions: [[region: 'us-east-2', globalTable: false], [region: 'us-east-1', globalTable: true]], askForPermission: false, acctNum: leAcctNum],
+                  [env: 'dev', region: 'us-east-1', askForPermission: false, acctNum: leAcctNum],
+                  [env: 'sqa', region: 'us-east-1', askForPermission: false, acctNum: leAcctNum],
+                  //[env: 'staging', regions: [[region: 'us-east-2', globalTable: false], [region: 'us-east-1', globalTable: true]], askForPermission: false, acctNum: leAcctNum],
+                  //[env: 'lt', regions: [[region: 'us-east-2', globalTable: false], [region: 'us-east-1', globalTable: true]], askForPermission: false, acctNum: leAcctNum],
           ]
           def tasksToExec = generateDeployTasks deployTargets
 
@@ -76,6 +76,7 @@ pipeline {
         }
       }
     }
+    /*
     stage('Smoke-Test Lower Environments') {
       when {
         branch 'develop'
@@ -92,6 +93,7 @@ pipeline {
         }
       }
     }
+    */
     stage('Deploy From Master') {
       when {
         branch 'master'
@@ -99,7 +101,7 @@ pipeline {
       steps {
         script {
           def deployTargets = [
-                  [env: 'production', regions: [[region: 'us-east-2', globalTable: false], [region: 'us-east-1', globalTable: true]], askForPermission: true, acctNum: prodAcctNum],
+                  [env: 'production', region: 'us-east-1', askForPermission: true, acctNum: prodAcctNum],
           ]
           def tasksToExec = generateDeployTasks deployTargets
 
@@ -135,12 +137,14 @@ def generateDeployTasks(targets) {
       def acctNum = deploy.acctNum
       def askForPermission = deploy.askForPermission
       def region = regionElement.region
+      /*
       def isGlobalTableDeploy = regionElement.globalTable
       def globalTableText = ""
 
       if (isGlobalTableDeploy) {
         globalTableText = "Global Table "
       }
+      */
 
       // define each deploy task as a closure so it defers execution.
       deployTasks["${slsStage}-${region}"] = {
@@ -179,13 +183,16 @@ def generateDeployTasks(targets) {
                   sh 'chmod -R ugo+r .'
                   drc_AwsAssumeRole([acctNum: acctNum,
                                     appName: "response-submission-udb-service",
-                                    bldNum : env.BUILD_NUMBER])
+                                    bldNum : env.BUILD_NUMBER,
+                                    jenkinsRole: "Terraform-Jenkins-Role"])
 
                   sh "umask 0022 && sls package --stage ${slsStage} --region ${region} --package slspkg/${slsStage}/${region}"
                   sh "umask 0022 && sls deploy --stage ${slsStage} --region ${region} --package slspkg/${slsStage}/${region} --verbose"
+                  /*
                   if (isGlobalTableDeploy) {
                     sh "umask 0022 && sls global-table deploy --stage ${slsStage} --global-table-regions us-east-1,us-east-2"
                   }
+                  */
                 }
                 echo "Build Successful"
                 echo "Deployed ${slsStage}"

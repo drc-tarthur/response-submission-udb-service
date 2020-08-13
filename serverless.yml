@@ -73,6 +73,10 @@ provider:
       - ${self:custom.env.${self:provider.region}.vpcSubnetId3}
     securityGroupIds:
       - ${self:custom.env.${self:provider.region}.vpcSgId1}
+  
+#alb:
+  #notificationArns: #list of exisiting Amazon SNS topics where notifications are sent
+    #- arn:aws:sns:${self:custom.region}:177429746880:LRC-Submit-To-Scoring-Processing-Topic-${self:custom.stage}
 
 package:
   path: slspkg/${self:custom.stage}/${self:custom.region}
@@ -96,10 +100,10 @@ functions:
   response-submission:
     name: ${self:custom.label}_response-submission
     handler: src/topicListener.handler
-    #events:
-    #  - sqs:
-    #      arn: arn:aws:sqs:${self:custom.region}:${self:custom.env.accountId}:participant-registration-export-to-udb-${self:custom.stage}-queue
-    #      batchSize: 1
+    events:
+      - sns: 
+          arn: arn:aws:sns:${self:custom.region}:177429746880:LRC-Submit-To-Scoring-Processing-Topic-${self:custom.stage}
+          topicName: LRC-Submit-To-Scoring-Processing-Topic-${self:custom.stage}
 
 resources:
   Resources:
