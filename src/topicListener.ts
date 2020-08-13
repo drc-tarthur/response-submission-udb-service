@@ -13,7 +13,7 @@ export async function handler(event: any, context) {
     const promises = event.Records.map(async (record) => {
       try {
         const body = JSON.parse(record.body);
-        log.info('SQS incoming', body);
+        log.info('event incoming', body);
         const udb = await UdbConnection.create(body.client.toLowerCase(), config.environment);
         const obj = await readS3(body.bucketName, body.key);
         log.info('S3 incoming', obj);

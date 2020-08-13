@@ -1,7 +1,7 @@
 import {S3} from 'aws-sdk';
 import { Log } from './log';
 
-const log = Log.genericLog('SQSReader');
+const log = Log.genericLog('SNSReader');
 
 export async function readS3(bucket, key): Promise<any> {
 

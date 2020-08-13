@@ -6,6 +6,7 @@ import {Log} from './util/log';
 declare var ScoreService: any;
 
 const log = Log.genericLog('');
+const sql  = require('mssql')
 
 var sqlQueryTestTicket = `
 select AdministrationID, DocumentID from Document.TestTicket
@@ -37,8 +38,12 @@ export class ResponseSubmissionService {
       let adminId = testDocInfo[0]
       let docId = testDocInfo[1]
 
+      log.info('testDocInfo from Document.TestTicket', testDocInfo)
+
       //create the entry in Insight.OnlineTests and return the derived OnlineTestID
       let onlineTestId = await udb.query(sqlInsertOT,{AdministrationID: adminId, DocumentID: docId})
+
+      log.info('otID', onlineTestId)
 
       //build an object out of the payload
       responseSubmission.Items = []
@@ -54,8 +59,31 @@ export class ResponseSubmissionService {
         pos++
       }
 
+      log.info('Items array object', responseSubmission.Items)
+
       //create Insight.OnlineTestResponses entries for each ItemID within the OnlineTestID
-      await udb.query(sqlInsertOTR, [responseSubmission.Items])
+      //await udb.query(sqlInsertOTR, [responseSubmission.Items])
+      const table = new sql.Table('Insight.OnlineTestResponses');
+      table.create = false;
+      //recordset.toTable()?
+      table.columns.add('AdministrationID',sql.Int,{ nullable: false });
+      table.columns.add('OnlineTestID',sql.Int,{ nullable: false });
+      table.columns.add('ItemID',sql.VarChar(50),{ nullable: false });
+      table.columns.add('Position',sql.Int,{ nullable: true });
+      //type?
+      table.columns.add('ExtendedResponse',sql.nVarChar('max'),{ nullable: true });
+      //
+
+      log.info('bulk table', table)
+
+      responseSubmission.Items.array.forEach(element => {
+        table.rows.add(element);
+      });
+
+      const request = new sql.Request();
+      request.bulk(table, (err, result) => {
+        log.info('bulk insert error',table)
+      })
 
     }
     catch (error){

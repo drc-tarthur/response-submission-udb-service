@@ -1,0 +1,26 @@
+Type: AWS::IAM::Role
+Properties:
+  Path: /
+  RoleName: Iamauto-response-submission-udb-service #Role name needs to have prefix of Iamauto-...but for the rest of the name, can be standardized to easily identify the role created by teams
+  Policies: # this adds new in-line policy in addition to Managed policy
+    - PolicyName: Iamauto-response-submission-udb-service-Policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+                - s3:*
+            Resource:
+                - 'arn:aws:s3:::us-east-1-lrc-scoring-payload-*'
+  ManagedPolicyArns: # this adds Managed policies to the service role
+    - arn:aws:iam::177429746880:policy/DRC-Lambda_Base
+    #- arn:aws:iam::177429746880:role/CWLtoKinesisFirehoseRole
+    #- arn:aws:iam::896911201517:policy/License-Management-LE
+  AssumeRolePolicyDocument:
+    Version: '2012-10-17'
+    Statement:
+      - Effect: Allow
+        Principal:
+          Service:
+            - lambda.amazonaws.com
+        Action: sts:AssumeRole

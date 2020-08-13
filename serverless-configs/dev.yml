@@ -12,5 +12,3 @@ us-east-2:
   vpcSgId1: sg-df472db5 # Default https Lambda Security Group
 
 dlqRetentionPeriod: 345600
-
-IamRoleLambdaExecution: arn:aws:iam::
